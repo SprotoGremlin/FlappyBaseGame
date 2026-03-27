@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --base-purple: #633BBC;
+  --base-blue: #0052FF;
+  --flappy-yellow: #F9D71C;
+  --dark-bg: #0A0A0A;
+  --dark-card: #111111;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.flappy-title {
+  font-size: 4.5rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #F9D71C, #633BBC);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
