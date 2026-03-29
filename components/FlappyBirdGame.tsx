@@ -19,85 +19,80 @@ export default function FlappyBirdGame() {
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     canvas.width = 400;
-    canvas.height = 600;
+    canvas.height = 620;
 
-    let birdY = 250;
+    let birdY = 280;
     let birdVelocity = 0;
-    const gravity = 0.6;
-    const jumpStrength = -11;
+    const gravity = 0.55;
+    const jump = -11.5;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
 
     const gameLoop = () => {
+      // Background
       ctx.fillStyle = '#0A0A0A';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Bird physics
+      // Bird
       birdVelocity += gravity;
       birdY += birdVelocity;
 
-      // Draw bird
       ctx.fillStyle = '#F9D71C';
       ctx.beginPath();
-      ctx.arc(100, birdY, 16, 0, Math.PI * 2);
+      ctx.arc(100, birdY, 17, 0, Math.PI * 2);
       ctx.fill();
 
-      // Generate pipes
-      if (frame % 85 === 0) {
-        const top = Math.random() * 220 + 80;
+      // Pipes
+      if (frame % 82 === 0) {
+        const top = Math.random() * 230 + 90;
         pipes.push({ x: canvas.width, top, passed: false });
       }
 
-      // Update & draw pipes
       for (let i = pipes.length - 1; i >= 0; i--) {
         const p = pipes[i];
-        p.x -= 2.2;
+        p.x -= 2.3;
 
         ctx.fillStyle = '#22C55E';
-        ctx.fillRect(p.x, 0, 55, p.top);                    // top pipe
-        ctx.fillRect(p.x, p.top + 170, 55, canvas.height);  // bottom pipe
+        ctx.fillRect(p.x, 0, 58, p.top);
+        ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
 
-        // Score
-        if (!p.passed && p.x + 55 < 100) {
+        if (!p.passed && p.x + 58 < 100) {
           p.passed = true;
           setScore(s => s + 1);
         }
 
         // Collision
         if (
-          100 < p.x + 55 && 100 > p.x &&
-          (birdY - 16 < p.top || birdY + 16 > p.top + 170)
+          100 < p.x + 58 && 100 > p.x &&
+          (birdY - 17 < p.top || birdY + 17 > p.top + 175)
         ) {
           setGameOver(true);
           setIsPlaying(false);
         }
 
-        if (p.x < -60) pipes.splice(i, 1);
+        if (p.x < -70) pipes.splice(i, 1);
       }
 
-      // Ground & ceiling collision
-      if (birdY > canvas.height - 40 || birdY < 0) {
+      // Ground & Ceiling
+      if (birdY > canvas.height - 45 || birdY < 20) {
         setGameOver(true);
         setIsPlaying(false);
       }
 
       frame++;
-
-      if (!gameOver && isPlaying) {
-        requestAnimationFrame(gameLoop);
-      }
+      if (isPlaying && !gameOver) requestAnimationFrame(gameLoop);
     };
 
     gameLoop();
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (!gameOver && isPlaying) birdVelocity = jumpStrength;
+      if (isPlaying && !gameOver) birdVelocity = jump;
     };
 
     canvas.addEventListener('click', handleJump);
@@ -111,35 +106,26 @@ export default function FlappyBirdGame() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 text-3xl font-bold text-[#F9D71C]">
-        Score: {score}
+      <div className="mb-4 text-4xl font-bold text-[#F9D71C] tracking-wider">
+        {score}
       </div>
 
       <canvas
         ref={canvasRef}
-        className="border-4 border-[#633BBC] rounded-2xl shadow-2xl"
+        className="border-4 border-[#633BBC] rounded-3xl shadow-2xl touch-none"
       />
 
       {(gameOver || !isPlaying) && (
-        <div className="mt-6 flex flex-col items-center gap-4">
-          {gameOver && <div className="text-4xl text-red-500 font-bold">Game Over!</div>}
+        <div className="mt-8 flex flex-col items-center gap-5">
+          {gameOver && <p className="text-3xl text-red-500 font-bold">Game Over!</p>}
           
           <button
             onClick={resetGame}
-            className="px-10 py-4 bg-[#633BBC] hover:bg-[#7C4DFF] text-white font-bold text-xl rounded-2xl transition-all active:scale-95"
+            className="px-12 py-5 bg-gradient-to-r from-[#633BBC] to-[#7C4DFF] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
           >
-            RESTART GAME
+            {gameOver ? 'PLAY AGAIN' : 'START GAME'}
           </button>
         </div>
-      )}
-
-      {!isPlaying && !gameOver && (
-        <button
-          onClick={resetGame}
-          className="mt-6 px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all"
-        >
-          START GAME
-        </button>
       )}
     </div>
   );
