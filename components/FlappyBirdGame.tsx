@@ -1,16 +1,24 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 export default function FlappyBirdGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const resetGame = useCallback(() => {
+    setScore(0);
+    setGameOver(false);
+    setIsPlaying(true);
+  }, []);
 
   useEffect(() => {
+    if (!isPlaying) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -19,8 +27,8 @@ export default function FlappyBirdGame() {
 
     let birdY = 250;
     let birdVelocity = 0;
-    const gravity = 0.5;
-    const jump = -10;
+    const gravity = 0.6;
+    const jumpStrength = -11;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
@@ -29,62 +37,67 @@ export default function FlappyBirdGame() {
       ctx.fillStyle = '#0A0A0A';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Bird
+      // Bird physics
       birdVelocity += gravity;
       birdY += birdVelocity;
 
+      // Draw bird
       ctx.fillStyle = '#F9D71C';
       ctx.beginPath();
-      ctx.arc(100, birdY, 15, 0, Math.PI * 2);
+      ctx.arc(100, birdY, 16, 0, Math.PI * 2);
       ctx.fill();
 
-      // Pipes
-      if (frame % 90 === 0) {
-        const topHeight = Math.random() * 250 + 100;
-        pipes.push({ x: canvas.width, top: topHeight, passed: false });
+      // Generate pipes
+      if (frame % 85 === 0) {
+        const top = Math.random() * 220 + 80;
+        pipes.push({ x: canvas.width, top, passed: false });
       }
 
+      // Update & draw pipes
       for (let i = pipes.length - 1; i >= 0; i--) {
-        const pipe = pipes[i];
-        pipe.x -= 2;
+        const p = pipes[i];
+        p.x -= 2.2;
 
-        // Top pipe
         ctx.fillStyle = '#22C55E';
-        ctx.fillRect(pipe.x, 0, 50, pipe.top);
-        // Bottom pipe
-        ctx.fillRect(pipe.x, pipe.top + 180, 50, canvas.height);
+        ctx.fillRect(p.x, 0, 55, p.top);                    // top pipe
+        ctx.fillRect(p.x, p.top + 170, 55, canvas.height);  // bottom pipe
 
         // Score
-        if (!pipe.passed && pipe.x + 50 < 100) {
-          pipe.passed = true;
+        if (!p.passed && p.x + 55 < 100) {
+          p.passed = true;
           setScore(s => s + 1);
         }
 
         // Collision
         if (
-          100 < pipe.x + 50 &&
-          100 > pipe.x &&
-          (birdY - 15 < pipe.top || birdY + 15 > pipe.top + 180)
+          100 < p.x + 55 && 100 > p.x &&
+          (birdY - 16 < p.top || birdY + 16 > p.top + 170)
         ) {
           setGameOver(true);
+          setIsPlaying(false);
         }
 
-        if (pipe.x < -50) pipes.splice(i, 1);
+        if (p.x < -60) pipes.splice(i, 1);
       }
 
-      // Ground collision
-      if (birdY > canvas.height - 30) {
+      // Ground & ceiling collision
+      if (birdY > canvas.height - 40 || birdY < 0) {
         setGameOver(true);
+        setIsPlaying(false);
       }
 
       frame++;
-      if (!gameOver) requestAnimationFrame(gameLoop);
+
+      if (!gameOver && isPlaying) {
+        requestAnimationFrame(gameLoop);
+      }
     };
 
     gameLoop();
 
-    const handleJump = () => {
-      if (!gameOver) birdVelocity = jump;
+    const handleJump = (e: Event) => {
+      e.preventDefault();
+      if (!gameOver && isPlaying) birdVelocity = jumpStrength;
     };
 
     canvas.addEventListener('click', handleJump);
@@ -94,20 +107,39 @@ export default function FlappyBirdGame() {
       canvas.removeEventListener('click', handleJump);
       canvas.removeEventListener('touchstart', handleJump);
     };
-  }, [gameOver]);
+  }, [isPlaying, gameOver]);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 text-2xl font-bold text-[#F9D71C]">Score: {score}</div>
-      <canvas 
-        ref={canvasRef} 
-        className="border-4 border-[#633BBC] rounded-2xl bg-black"
+      <div className="mb-4 text-3xl font-bold text-[#F9D71C]">
+        Score: {score}
+      </div>
+
+      <canvas
+        ref={canvasRef}
+        className="border-4 border-[#633BBC] rounded-2xl shadow-2xl"
       />
-      {gameOver && (
-        <div className="mt-6 text-center">
-          <div className="text-4xl text-red-500 mb-4">Game Over!</div>
-          <div className="text-xl">Final Score: {score}</div>
+
+      {(gameOver || !isPlaying) && (
+        <div className="mt-6 flex flex-col items-center gap-4">
+          {gameOver && <div className="text-4xl text-red-500 font-bold">Game Over!</div>}
+          
+          <button
+            onClick={resetGame}
+            className="px-10 py-4 bg-[#633BBC] hover:bg-[#7C4DFF] text-white font-bold text-xl rounded-2xl transition-all active:scale-95"
+          >
+            RESTART GAME
+          </button>
         </div>
+      )}
+
+      {!isPlaying && !gameOver && (
+        <button
+          onClick={resetGame}
+          className="mt-6 px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all"
+        >
+          START GAME
+        </button>
       )}
     </div>
   );
