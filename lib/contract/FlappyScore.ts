@@ -66,4 +66,4 @@ export const FlappyScoreABI = [
   }
 ] as const;
 
-export const FLAPPY_SCORE_ADDRESS = "0x0000000000000000000000000000000000000000"; // θα βάλουμε πραγματικό address αργότερα
+export const FLAPPY_SCORE_ADDRESS = "0x0000000000000000000000000000000000000000"; // TODO: Replace with real deployed address on Base Sepolia
