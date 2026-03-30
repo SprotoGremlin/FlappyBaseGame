@@ -1,18 +1,46 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useAccount, useWriteContract } from 'wagmi';
+import { FlappyScoreABI, FLAPPY_SCORE_ADDRESS } from '@/lib/contract/FlappyScore';
+import { parseEther } from 'viem';
 
 export default function FlappyBirdGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { address } = useAccount();
+  const { writeContract } = useWriteContract();
 
   const resetGame = useCallback(() => {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
   }, []);
+
+  const submitScoreToChain = async () => {
+    if (!address || score === 0) return;
+
+    setIsSubmitting(true);
+    try {
+      await writeContract({
+        address: FLAPPY_SCORE_ADDRESS as `0x${string}`,
+        abi: FlappyScoreABI,
+        functionName: 'submitScore',
+        args: [BigInt(score)],
+      });
+      alert(`Score ${score} submitted on Base! 🎉`);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to submit score. Make sure you are on Base Sepolia.');
+    }
+    setIsSubmitting(false);
+  };
+
+  // ... (το υπόλοιπο game logic μένει ίδιο όπως στο προηγούμενο commit)
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -34,11 +62,9 @@ export default function FlappyBirdGame() {
     let pipes: { x: number; top: number; passed: boolean }[] = [];
 
     const gameLoop = () => {
-      // Background
       ctx.fillStyle = '#0A0A0A';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Bird
       birdVelocity += gravity;
       birdY += birdVelocity;
 
@@ -47,7 +73,6 @@ export default function FlappyBirdGame() {
       ctx.arc(100, birdY, 17, 0, Math.PI * 2);
       ctx.fill();
 
-      // Pipes
       if (frame % 82 === 0) {
         const top = Math.random() * 230 + 90;
         pipes.push({ x: canvas.width, top, passed: false });
@@ -66,7 +91,6 @@ export default function FlappyBirdGame() {
           setScore(s => s + 1);
         }
 
-        // Collision
         if (
           100 < p.x + 58 && 100 > p.x &&
           (birdY - 17 < p.top || birdY + 17 > p.top + 175)
@@ -78,7 +102,6 @@ export default function FlappyBirdGame() {
         if (p.x < -70) pipes.splice(i, 1);
       }
 
-      // Ground & Ceiling
       if (birdY > canvas.height - 45 || birdY < 20) {
         setGameOver(true);
         setIsPlaying(false);
@@ -119,12 +142,24 @@ export default function FlappyBirdGame() {
         <div className="mt-8 flex flex-col items-center gap-5">
           {gameOver && <p className="text-3xl text-red-500 font-bold">Game Over!</p>}
           
-          <button
-            onClick={resetGame}
-            className="px-12 py-5 bg-gradient-to-r from-[#633BBC] to-[#7C4DFF] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
-          >
-            {gameOver ? 'PLAY AGAIN' : 'START GAME'}
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={resetGame}
+              className="px-10 py-4 bg-gradient-to-r from-[#633BBC] to-[#7C4DFF] text-white font-bold text-xl rounded-2xl hover:scale-105 transition-all"
+            >
+              PLAY AGAIN
+            </button>
+
+            {address && gameOver && (
+              <button
+                onClick={submitScoreToChain}
+                disabled={isSubmitting}
+                className="px-10 py-4 bg-[#22C55E] text-black font-bold text-xl rounded-2xl hover:scale-105 transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? 'Submitting...' : 'SAVE SCORE ON BASE'}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
