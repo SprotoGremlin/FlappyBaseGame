@@ -1,5 +1,5 @@
-# FlappyBaseGame
-docs: add detailed README with project description and roadmap
-git add README.md
-git commit -m "docs: add detailed README with project description and roadmap"
-git push
+- ✅ Basic Flappy Bird game with canvas
+- ✅ Wallet connection
+- ✅ Submit score button with toast notification
+- ✅ Leaderboard component (reads from contract)
+- ⏳ Contract deployment on Base Sepolia
