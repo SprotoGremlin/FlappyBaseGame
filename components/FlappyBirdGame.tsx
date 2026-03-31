@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { FlappyScoreABI, FLAPPY_SCORE_ADDRESS } from '@/lib/contract/FlappyScore';
-import { parseEther } from 'viem';
 
 export default function FlappyBirdGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,6 +10,7 @@ export default function FlappyBirdGame() {
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -19,12 +19,15 @@ export default function FlappyBirdGame() {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
+    setSubmitError(null);
   }, []);
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
+
     try {
       await writeContract({
         address: FLAPPY_SCORE_ADDRESS as `0x${string}`,
@@ -32,16 +35,16 @@ export default function FlappyBirdGame() {
         functionName: 'submitScore',
         args: [BigInt(score)],
       });
-      alert(`Score ${score} submitted on Base! 🎉`);
-    } catch (error) {
+      alert(`✅ Score ${score} saved on Base successfully!`);
+    } catch (error: any) {
       console.error(error);
-      alert('Failed to submit score. Make sure you are on Base Sepolia.');
+      setSubmitError(error?.message || 'Failed to submit score');
+      alert('❌ Failed to submit score. Make sure wallet is connected and on Base Sepolia.');
     }
     setIsSubmitting(false);
   };
 
-  // ... (το υπόλοιπο game logic μένει ίδιο όπως στο προηγούμενο commit)
-
+  // Game loop (ίδιο με πριν - για συντομία το κρατάμε όπως ήταν)
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -142,7 +145,7 @@ export default function FlappyBirdGame() {
         <div className="mt-8 flex flex-col items-center gap-5">
           {gameOver && <p className="text-3xl text-red-500 font-bold">Game Over!</p>}
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
               className="px-10 py-4 bg-gradient-to-r from-[#633BBC] to-[#7C4DFF] text-white font-bold text-xl rounded-2xl hover:scale-105 transition-all"
@@ -154,12 +157,16 @@ export default function FlappyBirdGame() {
               <button
                 onClick={submitScoreToChain}
                 disabled={isSubmitting}
-                className="px-10 py-4 bg-[#22C55E] text-black font-bold text-xl rounded-2xl hover:scale-105 transition-all disabled:opacity-50"
+                className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-50"
               >
-                {isSubmitting ? 'Submitting...' : 'SAVE SCORE ON BASE'}
+                {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
             )}
           </div>
+
+          {submitError && (
+            <p className="text-red-500 text-sm mt-2">{submitError}</p>
+          )}
         </div>
       )}
     </div>
