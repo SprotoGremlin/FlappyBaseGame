@@ -22,7 +22,7 @@ export default function FlappyBirdGame() {
     setSubmitError(null);
   }, []);
 
-  const submitScoreToChain = async () => {
+    const submitScoreToChain = async () => {
     if (!address || score === 0) return;
 
     setIsSubmitting(true);
@@ -35,15 +35,36 @@ export default function FlappyBirdGame() {
         functionName: 'submitScore',
         args: [BigInt(score)],
       });
-      alert(`✅ Score ${score} saved on Base successfully!`);
+
+      // Ωραίο toast
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#22C55E] text-black font-bold px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50";
+      toast.innerHTML = `✅ Score ${score} saved on Base!`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'all 0.4s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+      }, 2800);
+
     } catch (error: any) {
       console.error(error);
       setSubmitError(error?.message || 'Failed to submit score');
-      alert('❌ Failed to submit score. Make sure wallet is connected and on Base Sepolia.');
+      
+      const toast = document.createElement('div');
+      toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl z-50";
+      toast.innerHTML = `❌ Failed to save score`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'all 0.4s';
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+      }, 2500);
     }
     setIsSubmitting(false);
   };
-
   // Game loop (ίδιο με πριν - για συντομία το κρατάμε όπως ήταν)
   useEffect(() => {
     if (!isPlaying) return;
