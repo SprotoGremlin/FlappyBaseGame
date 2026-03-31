@@ -21,7 +21,7 @@ export default function FlappyFrame() {
       {/* Leaderboard */}
       <Leaderboard />
 
-      {/* Wallet */}
+      {/* Wallet Section */}
       <div className="w-full max-w-[420px] px-4">
         <div className="bg-[#111111] border border-[#633BBC]/40 rounded-3xl p-6">
           <p className="text-sm text-gray-400 mb-4 text-center">
@@ -33,7 +33,7 @@ export default function FlappyFrame() {
 
       {/* Footer */}
       <div className="text-xs text-gray-500 text-center">
-        Phase 2 • Onchain Scores • 27/100 commits
+        Phase 2 • Onchain Scores • 31/100 commits
       </div>
     </div>
   );
