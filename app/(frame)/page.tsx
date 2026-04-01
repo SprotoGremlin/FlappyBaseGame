@@ -4,7 +4,7 @@ import { WalletConnectButton } from '@/components/WalletConnectButton';
 
 export default function FlappyFrame() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] py-6 px-4 flex flex-col items-center gap-10">
+    <div className="min-h-screen bg-[#0A0A0A] py-8 px-4 flex flex-col items-center gap-10">
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-2 bg-[#0052FF]/10 border border-[#0052FF]/30 text-[#60A5FA] text-xs font-medium px-4 py-1.5 rounded-full mb-3">
@@ -41,7 +41,7 @@ export default function FlappyFrame() {
 
       {/* Footer */}
       <div className="text-xs text-gray-500 text-center">
-        Phase 2 • Onchain Scores • 39/100 commits
+        Phase 2 • Onchain Scores • 40/100 commits
       </div>
     </div>
   );
