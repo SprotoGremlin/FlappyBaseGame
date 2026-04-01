@@ -7,13 +7,16 @@ export default function FlappyFrame() {
     <div className="min-h-screen bg-[#0A0A0A] py-6 px-4 flex flex-col items-center gap-10">
       {/* Header */}
       <div className="text-center">
+        <div className="inline-flex items-center gap-2 bg-[#0052FF]/10 border border-[#0052FF]/30 text-[#60A5FA] text-xs font-medium px-4 py-1.5 rounded-full mb-3">
+          🟦 OFFICIAL BASE EDITION
+        </div>
         <h1 className="text-7xl font-black tracking-[-2px] mb-2 bg-gradient-to-r from-[#0052FF] via-[#3B82F6] to-[#60A5FA] bg-clip-text text-transparent">
           FlappyBase
         </h1>
-        <p className="text-xl text-[#60A5FA] font-medium">Powered by Base 🐦‍🔥</p>
+        <p className="text-xl text-[#60A5FA] font-medium">Play. Score. Save on Base 🐦‍🔥</p>
       </div>
 
-      {/* Bigger Game Canvas */}
+      {/* Game */}
       <div className="w-full max-w-[440px]">
         <div className="relative">
           <div className="absolute -inset-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] opacity-25 blur-3xl rounded-3xl"></div>
@@ -38,7 +41,7 @@ export default function FlappyFrame() {
 
       {/* Footer */}
       <div className="text-xs text-gray-500 text-center">
-        Phase 2 • Onchain Scores • 37/100 commits
+        Phase 2 • Onchain Scores • 38/100 commits
       </div>
     </div>
   );
