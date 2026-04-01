@@ -41,7 +41,7 @@ export default function FlappyFrame() {
 
       {/* Footer */}
       <div className="text-xs text-gray-500 text-center">
-        Phase 2 • Onchain Scores • 38/100 commits
+        Phase 2 • Onchain Scores • 39/100 commits
       </div>
     </div>
   );
