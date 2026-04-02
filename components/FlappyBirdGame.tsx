@@ -10,7 +10,7 @@ export default function FlappyBirdGame() {
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -19,14 +19,14 @@ export default function FlappyBirdGame() {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
-    setSubmitError(null);
+    setSubmitMessage(null);
   }, []);
 
-    const submitScoreToChain = async () => {
+  const submitScoreToChain = async () => {
     if (!address || score === 0) return;
 
     setIsSubmitting(true);
-    setSubmitError(null);
+    setSubmitMessage(null);
 
     try {
       await writeContract({
@@ -36,36 +36,18 @@ export default function FlappyBirdGame() {
         args: [BigInt(score)],
       });
 
-      // Ωραίο toast
-      const toast = document.createElement('div');
-      toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#22C55E] text-black font-bold px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50";
-      toast.innerHTML = `✅ Score ${score} saved on Base!`;
-      document.body.appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.transition = 'all 0.4s';
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 400);
-      }, 2800);
-
+      setSubmitMessage(`✅ Score ${score} saved on Base!`);
+      
+      // Auto hide message after 4 seconds
+      setTimeout(() => setSubmitMessage(null), 4000);
     } catch (error: any) {
       console.error(error);
-      setSubmitError(error?.message || 'Failed to submit score');
-      
-      const toast = document.createElement('div');
-      toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 bg-red-600 text-white font-bold px-8 py-4 rounded-2xl shadow-2xl z-50";
-      toast.innerHTML = `❌ Failed to save score`;
-      document.body.appendChild(toast);
-
-      setTimeout(() => {
-        toast.style.transition = 'all 0.4s';
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 400);
-      }, 2500);
+      setSubmitMessage(`❌ Failed: ${error?.message?.slice(0, 80)}...`);
     }
     setIsSubmitting(false);
   };
-  // Game loop (ίδιο με πριν - για συντομία το κρατάμε όπως ήταν)
+
+  // Game Loop (παραμένει ίδιο)
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -159,7 +141,7 @@ export default function FlappyBirdGame() {
 
       <canvas
         ref={canvasRef}
-        className="border-4 border-[#633BBC] rounded-3xl shadow-2xl touch-none"
+        className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none"
       />
 
       {(gameOver || !isPlaying) && (
@@ -169,7 +151,7 @@ export default function FlappyBirdGame() {
           <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
-              className="px-10 py-4 bg-gradient-to-r from-[#633BBC] to-[#7C4DFF] text-white font-bold text-xl rounded-2xl hover:scale-105 transition-all"
+              className="px-10 py-4 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-xl rounded-2xl hover:scale-105 transition-all"
             >
               PLAY AGAIN
             </button>
@@ -178,15 +160,17 @@ export default function FlappyBirdGame() {
               <button
                 onClick={submitScoreToChain}
                 disabled={isSubmitting}
-                className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-50"
+                className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-70"
               >
                 {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
             )}
           </div>
 
-          {submitError && (
-            <p className="text-red-500 text-sm mt-2">{submitError}</p>
+          {submitMessage && (
+            <p className={`text-sm font-medium mt-3 ${submitMessage.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+              {submitMessage}
+            </p>
           )}
         </div>
       )}
