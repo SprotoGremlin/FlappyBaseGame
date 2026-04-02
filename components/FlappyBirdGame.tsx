@@ -10,7 +10,7 @@ export default function FlappyBirdGame() {
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -19,14 +19,14 @@ export default function FlappyBirdGame() {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
-    setSubmitMessage(null);
+    setSubmitStatus(null);
   }, []);
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
 
     setIsSubmitting(true);
-    setSubmitMessage(null);
+    setSubmitStatus(null);
 
     try {
       await writeContract({
@@ -36,18 +36,21 @@ export default function FlappyBirdGame() {
         args: [BigInt(score)],
       });
 
-      setSubmitMessage(`✅ Score ${score} saved on Base!`);
-      
-      // Auto hide message after 4 seconds
-      setTimeout(() => setSubmitMessage(null), 4000);
+      setSubmitStatus({
+        type: 'success',
+        message: `✅ Score ${score} saved successfully on Base!`
+      });
     } catch (error: any) {
       console.error(error);
-      setSubmitMessage(`❌ Failed: ${error?.message?.slice(0, 80)}...`);
+      setSubmitStatus({
+        type: 'error',
+        message: `❌ Failed to save score. Make sure you are on Base Sepolia.`
+      });
     }
     setIsSubmitting(false);
   };
 
-  // Game Loop (παραμένει ίδιο)
+  // Game Loop
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -167,9 +170,9 @@ export default function FlappyBirdGame() {
             )}
           </div>
 
-          {submitMessage && (
-            <p className={`text-sm font-medium mt-3 ${submitMessage.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
-              {submitMessage}
+          {submitStatus && (
+            <p className={`text-sm font-medium mt-3 ${submitStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+              {submitStatus.message}
             </p>
           )}
         </div>
