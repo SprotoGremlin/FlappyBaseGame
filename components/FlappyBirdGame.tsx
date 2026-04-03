@@ -10,7 +10,7 @@ export default function FlappyBirdGame() {
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -19,14 +19,13 @@ export default function FlappyBirdGame() {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
-    setSubmitStatus(null);
+    setShowConfetti(false);
   }, []);
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
 
     setIsSubmitting(true);
-    setSubmitStatus(null);
 
     try {
       await writeContract({
@@ -36,19 +35,11 @@ export default function FlappyBirdGame() {
         args: [BigInt(score)],
       });
 
-      setSubmitStatus({
-        type: 'success',
-        message: `🎉 Score ${score} saved on Base successfully!`
-      });
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
 
-      // Auto hide after 4 seconds
-      setTimeout(() => setSubmitStatus(null), 4000);
-    } catch (error: any) {
-      console.error(error);
-      setSubmitStatus({
-        type: 'error',
-        message: `❌ Failed to save score. Please try again.`
-      });
+    } catch (error) {
+      alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
     }
     setIsSubmitting(false);
   };
@@ -139,6 +130,72 @@ export default function FlappyBirdGame() {
     };
   }, [isPlaying, gameOver]);
 
+  // Confetti Effect
+  useEffect(() => {
+    if (!showConfetti) return;
+
+    const colors = ['#0052FF', '#3B82F6', '#60A5FA', '#F9D71C', '#22C55E'];
+    let particles: any[] = [];
+
+    const createParticle = () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight * 0.6,
+      size: Math.random() * 8 + 4,
+      speed: Math.random() * 3 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rotation: Math.random() * 360,
+      rotationSpeed: Math.random() * 10 - 5,
+    });
+
+    for (let i = 0; i < 80; i++) {
+      particles.push(createParticle());
+    }
+
+    const animateConfetti = () => {
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '100';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d')!;
+
+      const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let stillAlive = false;
+
+        particles.forEach((p, i) => {
+          p.y += p.speed;
+          p.rotation += p.rotationSpeed;
+          p.speed += 0.05;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          ctx.restore();
+
+          if (p.y < canvas.height + 50) stillAlive = true;
+        });
+
+        if (stillAlive) {
+          requestAnimationFrame(animate);
+        } else {
+          canvas.remove();
+        }
+      };
+
+      animate();
+    };
+
+    animateConfetti();
+  }, [showConfetti]);
+
   return (
     <div className="flex flex-col items-center">
       <div className="mb-4 text-4xl font-bold text-[#F9D71C] tracking-wider">
@@ -172,16 +229,6 @@ export default function FlappyBirdGame() {
               </button>
             )}
           </div>
-
-          {submitStatus && (
-            <p className={`text-base font-medium mt-3 px-4 py-2 rounded-2xl ${
-              submitStatus.type === 'success' 
-                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                : 'bg-red-500/20 text-red-400 border border-red-500/30'
-            }`}>
-              {submitStatus.message}
-            </p>
-          )}
         </div>
       )}
     </div>
