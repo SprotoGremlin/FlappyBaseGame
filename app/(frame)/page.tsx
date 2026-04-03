@@ -16,7 +16,7 @@ export default function FlappyFrame() {
         <p className="text-xl text-[#60A5FA] font-medium">Play. Score. Save on Base 🐦‍🔥</p>
       </div>
 
-      {/* Game with glow */}
+      {/* Game */}
       <div className="w-full max-w-[440px]">
         <div className="relative">
           <div className="absolute -inset-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] opacity-25 blur-3xl rounded-3xl"></div>
@@ -41,7 +41,7 @@ export default function FlappyFrame() {
 
       {/* Footer */}
       <div className="text-xs text-gray-500 text-center">
-        Phase 2 • Onchain Scores • 43/100 commits
+        Phase 2 • Onchain Scores • 49/100 commits
       </div>
     </div>
   );
