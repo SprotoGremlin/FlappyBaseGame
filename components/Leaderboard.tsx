@@ -28,17 +28,21 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <div className="bg-[#1A1A1A] rounded-2xl p-6">
-        <div className="flex justify-between items-center py-3">
-          <span className="text-gray-400">Your High Score</span>
+      <div className="bg-[#1A1A1A] rounded-2xl p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400">Your Best Score</span>
           <span className="text-4xl font-bold text-white">
             {myHighScore ? myHighScore.toString() : '—'}
           </span>
         </div>
+
+        <div className="pt-4 border-t border-gray-800 text-center text-sm text-gray-500">
+          Global leaderboard will appear after more players join
+        </div>
       </div>
 
-      <p className="text-center text-xs text-gray-500 mt-6">
-        Global top players coming after contract deployment
+      <p className="text-[10px] text-gray-600 text-center mt-6">
+        Scores are saved permanently on Base Sepolia
       </p>
     </div>
   );
