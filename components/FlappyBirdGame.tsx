@@ -16,7 +16,6 @@ export default function FlappyBirdGame() {
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
 
-  // Read current high score
   const { data: myHighScore } = useReadContract({
     address: FLAPPY_SCORE_ADDRESS as `0x${string}`,
     abi: FlappyScoreABI,
@@ -53,7 +52,6 @@ export default function FlappyBirdGame() {
     setIsSubmitting(false);
   };
 
-  // Simple jump sound
   const playJumpSound = () => {
     if (!soundEnabled) return;
     try {
@@ -161,8 +159,8 @@ export default function FlappyBirdGame() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 flex items-center gap-6">
-        <div className="text-4xl font-bold text-[#F9D71C] tracking-wider">
+      <div className="mb-6 flex items-center gap-6">
+        <div className="text-5xl font-bold text-[#F9D71C] tracking-wider">
           {score}
         </div>
         {myHighScore && (
@@ -184,19 +182,21 @@ export default function FlappyBirdGame() {
       />
 
       {(gameOver || !isPlaying) && (
-        <div className="mt-8 flex flex-col items-center gap-5 text-center">
-          {gameOver && <p className="text-4xl text-red-500 font-bold">Game Over!</p>}
-          
+        <div className="mt-10 flex flex-col items-center gap-6 text-center">
+          {gameOver && (
+            <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
+          )}
+
           {myHighScore && (
-            <p className="text-lg text-gray-300">
-              Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
+            <p className="text-xl text-gray-300">
+              Your best score: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
             </p>
           )}
 
           <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
-              className="px-10 py-4 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-xl rounded-2xl hover:scale-105 transition-all"
+              className="px-12 py-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
             >
               PLAY AGAIN
             </button>
@@ -205,7 +205,7 @@ export default function FlappyBirdGame() {
               <button
                 onClick={submitScoreToChain}
                 disabled={isSubmitting}
-                className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-70"
+                className="px-12 py-5 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-2xl rounded-2xl transition-all disabled:opacity-70"
               >
                 {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
@@ -213,7 +213,7 @@ export default function FlappyBirdGame() {
           </div>
 
           {showConfetti && (
-            <p className="text-green-400 font-medium text-lg mt-2">🎉 Score saved on Base!</p>
+            <p className="text-green-400 text-xl font-medium mt-2">🎉 Score saved on Base!</p>
           )}
         </div>
       )}
