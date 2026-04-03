@@ -12,6 +12,7 @@ export default function FlappyBirdGame() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [scoreSaved, setScoreSaved] = useState(false);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -28,6 +29,7 @@ export default function FlappyBirdGame() {
     setGameOver(false);
     setIsPlaying(true);
     setShowConfetti(false);
+    setScoreSaved(false);
   }, []);
 
   const submitScoreToChain = async () => {
@@ -44,6 +46,7 @@ export default function FlappyBirdGame() {
       });
 
       setShowConfetti(true);
+      setScoreSaved(true);
       setTimeout(() => setShowConfetti(false), 2800);
 
     } catch (error) {
@@ -148,7 +151,6 @@ export default function FlappyBirdGame() {
       }
     };
 
-    // Bigger touch area for mobile
     canvas.addEventListener('click', handleJump);
     canvas.addEventListener('touchstart', handleJump, { passive: false });
 
@@ -194,6 +196,10 @@ export default function FlappyBirdGame() {
             </p>
           )}
 
+          {scoreSaved && (
+            <p className="text-green-400 text-2xl font-medium">✅ High Score Saved on Base!</p>
+          )}
+
           <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
@@ -212,12 +218,9 @@ export default function FlappyBirdGame() {
               </button>
             )}
           </div>
-
-          {showConfetti && (
-            <p className="text-green-400 text-xl font-medium mt-2">🎉 Score saved on Base!</p>
-          )}
         </div>
       )}
     </div>
   );
+}
 }
