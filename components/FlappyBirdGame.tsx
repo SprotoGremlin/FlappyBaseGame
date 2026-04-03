@@ -11,6 +11,7 @@ export default function FlappyBirdGame() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -36,12 +37,31 @@ export default function FlappyBirdGame() {
       });
 
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setShowConfetti(false), 2800);
 
     } catch (error) {
-      alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
+      alert("❌ Failed to save score. Make sure you're connected to Base Sepolia.");
     }
     setIsSubmitting(false);
+  };
+
+  // Simple sound (using Web Audio API)
+  const playJumpSound = () => {
+    if (!soundEnabled) return;
+    try {
+      const audio = new AudioContext();
+      const oscillator = audio.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 600;
+      const gain = audio.createGain();
+      gain.gain.value = 0.2;
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+      oscillator.start();
+      setTimeout(() => {
+        oscillator.stop();
+      }, 80);
+    } catch {}
   };
 
   // Game Loop
@@ -118,7 +138,10 @@ export default function FlappyBirdGame() {
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (isPlaying && !gameOver) birdVelocity = jump;
+      if (isPlaying && !gameOver) {
+        birdVelocity = jump;
+        playJumpSound();
+      }
     };
 
     canvas.addEventListener('click', handleJump);
@@ -128,78 +151,18 @@ export default function FlappyBirdGame() {
       canvas.removeEventListener('click', handleJump);
       canvas.removeEventListener('touchstart', handleJump);
     };
-  }, [isPlaying, gameOver]);
-
-  // Confetti Effect
-  useEffect(() => {
-    if (!showConfetti) return;
-
-    const colors = ['#0052FF', '#3B82F6', '#60A5FA', '#F9D71C', '#22C55E'];
-    let particles: any[] = [];
-
-    const createParticle = () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight * 0.6,
-      size: Math.random() * 8 + 4,
-      speed: Math.random() * 3 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      rotation: Math.random() * 360,
-      rotationSpeed: Math.random() * 10 - 5,
-    });
-
-    for (let i = 0; i < 80; i++) {
-      particles.push(createParticle());
-    }
-
-    const animateConfetti = () => {
-      const canvas = document.createElement('canvas');
-      canvas.style.position = 'fixed';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.pointerEvents = 'none';
-      canvas.style.zIndex = '100';
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      document.body.appendChild(canvas);
-
-      const ctx = canvas.getContext('2d')!;
-
-      const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let stillAlive = false;
-
-        particles.forEach((p, i) => {
-          p.y += p.speed;
-          p.rotation += p.rotationSpeed;
-          p.speed += 0.05;
-
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate((p.rotation * Math.PI) / 180);
-          ctx.fillStyle = p.color;
-          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-          ctx.restore();
-
-          if (p.y < canvas.height + 50) stillAlive = true;
-        });
-
-        if (stillAlive) {
-          requestAnimationFrame(animate);
-        } else {
-          canvas.remove();
-        }
-      };
-
-      animate();
-    };
-
-    animateConfetti();
-  }, [showConfetti]);
+  }, [isPlaying, gameOver, soundEnabled]);
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 text-4xl font-bold text-[#F9D71C] tracking-wider">
+      <div className="mb-4 text-4xl font-bold text-[#F9D71C] tracking-wider flex items-center gap-4">
         {score}
+        <button
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          className="text-xl text-gray-400 hover:text-white transition"
+        >
+          {soundEnabled ? '🔊' : '🔇'}
+        </button>
       </div>
 
       <canvas
@@ -225,12 +188,9 @@ export default function FlappyBirdGame() {
                 disabled={isSubmitting}
                 className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-70"
               >
-                {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
+                {isSubmitting ? 'SAVING...' : 'SAVE SCORE ONCHAIN'}
               </button>
             )}
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+
+          {showConfetti &&
