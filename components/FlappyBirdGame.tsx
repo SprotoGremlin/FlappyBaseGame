@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { FlappyScoreABI, FLAPPY_SCORE_ADDRESS } from '@/lib/contract/FlappyScore';
 
 export default function FlappyBirdGame() {
@@ -15,6 +15,14 @@ export default function FlappyBirdGame() {
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
+
+  // Read current high score
+  const { data: myHighScore } = useReadContract({
+    address: FLAPPY_SCORE_ADDRESS as `0x${string}`,
+    abi: FlappyScoreABI,
+    functionName: 'getHighScore',
+    args: address ? [address] : undefined,
+  });
 
   const resetGame = useCallback(() => {
     setScore(0);
@@ -40,27 +48,25 @@ export default function FlappyBirdGame() {
       setTimeout(() => setShowConfetti(false), 2800);
 
     } catch (error) {
-      alert("❌ Failed to save score. Make sure you're connected to Base Sepolia.");
+      alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
     }
     setIsSubmitting(false);
   };
 
-  // Simple sound (using Web Audio API)
+  // Simple jump sound
   const playJumpSound = () => {
     if (!soundEnabled) return;
     try {
       const audio = new AudioContext();
       const oscillator = audio.createOscillator();
       oscillator.type = 'sine';
-      oscillator.frequency.value = 600;
+      oscillator.frequency.value = 620;
       const gain = audio.createGain();
-      gain.gain.value = 0.2;
+      gain.gain.value = 0.15;
       oscillator.connect(gain);
       gain.connect(audio.destination);
       oscillator.start();
-      setTimeout(() => {
-        oscillator.stop();
-      }, 80);
+      setTimeout(() => oscillator.stop(), 70);
     } catch {}
   };
 
@@ -155,11 +161,18 @@ export default function FlappyBirdGame() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-4 text-4xl font-bold text-[#F9D71C] tracking-wider flex items-center gap-4">
-        {score}
+      <div className="mb-4 flex items-center gap-6">
+        <div className="text-4xl font-bold text-[#F9D71C] tracking-wider">
+          {score}
+        </div>
+        {myHighScore && (
+          <div className="text-sm text-gray-400">
+            Best: <span className="text-[#60A5FA] font-medium">{myHighScore.toString()}</span>
+          </div>
+        )}
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="text-xl text-gray-400 hover:text-white transition"
+          className="text-2xl text-gray-400 hover:text-white transition"
         >
           {soundEnabled ? '🔊' : '🔇'}
         </button>
@@ -171,9 +184,15 @@ export default function FlappyBirdGame() {
       />
 
       {(gameOver || !isPlaying) && (
-        <div className="mt-8 flex flex-col items-center gap-5">
-          {gameOver && <p className="text-3xl text-red-500 font-bold">Game Over!</p>}
+        <div className="mt-8 flex flex-col items-center gap-5 text-center">
+          {gameOver && <p className="text-4xl text-red-500 font-bold">Game Over!</p>}
           
+          {myHighScore && (
+            <p className="text-lg text-gray-300">
+              Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
+            </p>
+          )}
+
           <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
@@ -188,9 +207,16 @@ export default function FlappyBirdGame() {
                 disabled={isSubmitting}
                 className="px-10 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-xl rounded-2xl transition-all disabled:opacity-70"
               >
-                {isSubmitting ? 'SAVING...' : 'SAVE SCORE ONCHAIN'}
+                {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
             )}
           </div>
 
-          {showConfetti &&
+          {showConfetti && (
+            <p className="text-green-400 font-medium text-lg mt-2">🎉 Score saved on Base!</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
