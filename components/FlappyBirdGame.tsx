@@ -38,13 +38,16 @@ export default function FlappyBirdGame() {
 
       setSubmitStatus({
         type: 'success',
-        message: `✅ Score ${score} saved successfully on Base!`
+        message: `🎉 Score ${score} saved on Base successfully!`
       });
+
+      // Auto hide after 4 seconds
+      setTimeout(() => setSubmitStatus(null), 4000);
     } catch (error: any) {
       console.error(error);
       setSubmitStatus({
         type: 'error',
-        message: `❌ Failed to save score. Make sure you are on Base Sepolia.`
+        message: `❌ Failed to save score. Please try again.`
       });
     }
     setIsSubmitting(false);
@@ -171,7 +174,11 @@ export default function FlappyBirdGame() {
           </div>
 
           {submitStatus && (
-            <p className={`text-sm font-medium mt-3 ${submitStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+            <p className={`text-base font-medium mt-3 px-4 py-2 rounded-2xl ${
+              submitStatus.type === 'success' 
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
               {submitStatus.message}
             </p>
           )}
