@@ -148,8 +148,9 @@ export default function FlappyBirdGame() {
       }
     };
 
+    // Bigger touch area for mobile
     canvas.addEventListener('click', handleJump);
-    canvas.addEventListener('touchstart', handleJump);
+    canvas.addEventListener('touchstart', handleJump, { passive: false });
 
     return () => {
       canvas.removeEventListener('click', handleJump);
@@ -178,7 +179,7 @@ export default function FlappyBirdGame() {
 
       <canvas
         ref={canvasRef}
-        className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none"
+        className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
 
       {(gameOver || !isPlaying) && (
@@ -189,14 +190,14 @@ export default function FlappyBirdGame() {
 
           {myHighScore && (
             <p className="text-xl text-gray-300">
-              Your best score: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
+              Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
             </p>
           )}
 
           <div className="flex gap-4 flex-wrap justify-center">
             <button
               onClick={resetGame}
-              className="px-12 py-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
+              className="px-14 py-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
             >
               PLAY AGAIN
             </button>
@@ -205,7 +206,7 @@ export default function FlappyBirdGame() {
               <button
                 onClick={submitScoreToChain}
                 disabled={isSubmitting}
-                className="px-12 py-5 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-2xl rounded-2xl transition-all disabled:opacity-70"
+                className="px-14 py-5 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-2xl rounded-2xl transition-all disabled:opacity-70"
               >
                 {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
