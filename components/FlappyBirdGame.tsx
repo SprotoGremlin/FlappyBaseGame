@@ -45,7 +45,6 @@ export default function FlappyBirdGame() {
         args: [BigInt(score)],
       });
 
-      // Check if it's a new high score
       if (myHighScore && score > Number(myHighScore)) {
         setIsNewHighScore(true);
       }
@@ -57,6 +56,12 @@ export default function FlappyBirdGame() {
       alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
     }
     setIsSubmitting(false);
+  };
+
+  const shareOnFarcaster = () => {
+    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
+    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(window.location.href)}`;
+    window.open(url, '_blank');
   };
 
   const playJumpSound = () => {
@@ -194,7 +199,7 @@ export default function FlappyBirdGame() {
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
           )}
 
-          {myHighScore && score > Number(myHighScore) && (
+          {isNewHighScore && (
             <p className="text-2xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
           )}
 
@@ -221,6 +226,15 @@ export default function FlappyBirdGame() {
                 {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
               </button>
             )}
+
+            {gameOver && score > 10 && (
+              <button
+                onClick={shareOnFarcaster}
+                className="px-8 py-5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xl rounded-2xl transition-all"
+              >
+                Share on Farcaster
+              </button>
+            )}
           </div>
 
           {showConfetti && (
@@ -231,3 +245,11 @@ export default function FlappyBirdGame() {
     </div>
   );
 }
+
+// Share function (outside component)
+const shareOnFarcaster = () => {
+  const score = document.querySelector('.text-5xl')?.textContent || '0';
+  const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now!`;
+  const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+};
