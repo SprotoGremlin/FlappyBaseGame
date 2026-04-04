@@ -12,7 +12,7 @@ export default function FlappyBirdGame() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [scoreSaved, setScoreSaved] = useState(false);
+  const [isNewHighScore, setIsNewHighScore] = useState(false);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -29,7 +29,7 @@ export default function FlappyBirdGame() {
     setGameOver(false);
     setIsPlaying(true);
     setShowConfetti(false);
-    setScoreSaved(false);
+    setIsNewHighScore(false);
   }, []);
 
   const submitScoreToChain = async () => {
@@ -45,9 +45,13 @@ export default function FlappyBirdGame() {
         args: [BigInt(score)],
       });
 
+      // Check if it's a new high score
+      if (myHighScore && score > Number(myHighScore)) {
+        setIsNewHighScore(true);
+      }
+
       setShowConfetti(true);
-      setScoreSaved(true);
-      setTimeout(() => setShowConfetti(false), 2800);
+      setTimeout(() => setShowConfetti(false), 3000);
 
     } catch (error) {
       alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
@@ -190,14 +194,14 @@ export default function FlappyBirdGame() {
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
           )}
 
+          {myHighScore && score > Number(myHighScore) && (
+            <p className="text-2xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
+          )}
+
           {myHighScore && (
             <p className="text-xl text-gray-300">
               Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
             </p>
-          )}
-
-          {scoreSaved && (
-            <p className="text-green-400 text-2xl font-medium">✅ High Score Saved on Base!</p>
           )}
 
           <div className="flex gap-4 flex-wrap justify-center">
@@ -218,9 +222,12 @@ export default function FlappyBirdGame() {
               </button>
             )}
           </div>
+
+          {showConfetti && (
+            <p className="text-green-400 text-xl font-medium mt-2">🎉 Score saved on Base!</p>
+          )}
         </div>
       )}
     </div>
   );
-}
 }
