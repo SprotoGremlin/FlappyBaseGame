@@ -58,12 +58,6 @@ export default function FlappyBirdGame() {
     setIsSubmitting(false);
   };
 
-  const shareOnFarcaster = () => {
-    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
-    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(window.location.href)}`;
-    window.open(url, '_blank');
-  };
-
   const playJumpSound = () => {
     if (!soundEnabled) return;
     try {
@@ -78,6 +72,12 @@ export default function FlappyBirdGame() {
       oscillator.start();
       setTimeout(() => oscillator.stop(), 70);
     } catch {}
+  };
+
+  const shareOnFarcaster = () => {
+    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
+    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   // Game Loop
@@ -200,7 +200,7 @@ export default function FlappyBirdGame() {
           )}
 
           {isNewHighScore && (
-            <p className="text-2xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
+            <p className="text-3xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
           )}
 
           {myHighScore && (
@@ -227,10 +227,10 @@ export default function FlappyBirdGame() {
               </button>
             )}
 
-            {gameOver && score > 10 && (
+            {gameOver && score >= 15 && (
               <button
                 onClick={shareOnFarcaster}
-                className="px-8 py-5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xl rounded-2xl transition-all"
+                className="px-10 py-5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xl rounded-2xl transition-all"
               >
                 Share on Farcaster
               </button>
@@ -246,10 +246,11 @@ export default function FlappyBirdGame() {
   );
 }
 
-// Share function (outside component)
+// Share function
 const shareOnFarcaster = () => {
-  const score = document.querySelector('.text-5xl')?.textContent || '0';
-  const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now!`;
+  const scoreElement = document.querySelector('.text-5xl');
+  const currentScore = scoreElement ? scoreElement.textContent : '0';
+  const text = `I just scored ${currentScore} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
   const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
 };
