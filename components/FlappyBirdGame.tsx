@@ -74,7 +74,7 @@ export default function FlappyBirdGame() {
     } catch {}
   };
 
-  // Game Loop with scrolling ground
+  // Game Loop with clouds
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -90,10 +90,19 @@ export default function FlappyBirdGame() {
     let birdVelocity = 0;
     const gravity = 0.55;
     const jump = -11.5;
-    let groundX = 0;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
+    let clouds: { x: number; y: number; size: number }[] = [];
+
+    // Initial clouds
+    for (let i = 0; i < 5; i++) {
+      clouds.push({
+        x: Math.random() * canvas.width,
+        y: 60 + Math.random() * 120,
+        size: 30 + Math.random() * 25
+      });
+    }
 
     const gameLoop = () => {
       // Sky
@@ -103,15 +112,21 @@ export default function FlappyBirdGame() {
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Ground with scrolling
-      groundX -= 2.3;
-      if (groundX <= -40) groundX = 0;
+      // Moving clouds
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
+      clouds.forEach((cloud, i) => {
+        cloud.x -= 0.4;
+        if (cloud.x < -cloud.size * 2) cloud.x = canvas.width + 50;
+        ctx.beginPath();
+        ctx.ellipse(cloud.x, cloud.y, cloud.size, cloud.size * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
+      // Ground
       ctx.fillStyle = '#166534';
       ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
       ctx.fillStyle = '#22C55E';
-      ctx.fillRect(groundX, canvas.height - 45, canvas.width + 40, 8);
-      ctx.fillRect(groundX - 40, canvas.height - 45, canvas.width + 40, 8);
+      ctx.fillRect(0, canvas.height - 45, canvas.width, 8);
 
       birdVelocity += gravity;
       birdY += birdVelocity;
