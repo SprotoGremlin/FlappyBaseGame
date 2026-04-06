@@ -27,16 +27,10 @@ export default function FlappyBirdGame() {
   const resetGame = useCallback(() => {
     setScore(0);
     setGameOver(false);
-    setIsPlaying(false);        // start screen
+    setIsPlaying(true);
     setShowConfetti(false);
     setIsNewHighScore(false);
   }, []);
-
-  const startGame = () => {
-    setScore(0);
-    setGameOver(false);
-    setIsPlaying(true);
-  };
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
@@ -80,7 +74,7 @@ export default function FlappyBirdGame() {
     } catch {}
   };
 
-  // Game Loop
+  // Game Loop with scrolling ground
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -96,6 +90,7 @@ export default function FlappyBirdGame() {
     let birdVelocity = 0;
     const gravity = 0.55;
     const jump = -11.5;
+    let groundX = 0;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
@@ -108,11 +103,15 @@ export default function FlappyBirdGame() {
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Ground
+      // Ground with scrolling
+      groundX -= 2.3;
+      if (groundX <= -40) groundX = 0;
+
       ctx.fillStyle = '#166534';
       ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
       ctx.fillStyle = '#22C55E';
-      ctx.fillRect(0, canvas.height - 45, canvas.width, 8);
+      ctx.fillRect(groundX, canvas.height - 45, canvas.width + 40, 8);
+      ctx.fillRect(groundX - 40, canvas.height - 45, canvas.width + 40, 8);
 
       birdVelocity += gravity;
       birdY += birdVelocity;
@@ -171,9 +170,7 @@ export default function FlappyBirdGame() {
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (!isPlaying) {
-        startGame();
-      } else if (!gameOver) {
+      if (isPlaying && !gameOver) {
         birdVelocity = jump;
         playJumpSound();
       }
@@ -212,14 +209,7 @@ export default function FlappyBirdGame() {
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
 
-      {/* Start Screen */}
-      {!isPlaying && !gameOver && (
-        <div className="absolute text-center pointer-events-none">
-          <p className="text-3xl text-[#60A5FA] font-bold mb-4">TAP TO START</p>
-        </div>
-      )}
-
-      {(gameOver || !isPlaying) && isPlaying && (
+      {(gameOver || !isPlaying) && (
         <div className="mt-10 flex flex-col items-center gap-6 text-center">
           {gameOver && (
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
