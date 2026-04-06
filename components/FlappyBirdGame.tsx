@@ -27,10 +27,16 @@ export default function FlappyBirdGame() {
   const resetGame = useCallback(() => {
     setScore(0);
     setGameOver(false);
-    setIsPlaying(true);
+    setIsPlaying(false);        // start screen
     setShowConfetti(false);
     setIsNewHighScore(false);
   }, []);
+
+  const startGame = () => {
+    setScore(0);
+    setGameOver(false);
+    setIsPlaying(true);
+  };
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
@@ -74,243 +80,7 @@ export default function FlappyBirdGame() {
     } catch {}
   };
 
-  // Game Loop with improved visuals
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
-
-    canvas.width = 400;
-    canvas.height = 620;
-
-    let birdY = 280;
-    let birdVelocity = 0;
-    const gravity = 0.55;
-    const jump = -11.5;
-
-    let frame = 0;
-    let pipes: { x: number; top: number; passed: boolean }[] = [];
-
-    const gameLoop = () => {
-      // Sky gradient
-      const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      sky.addColorStop(0, '#0A0A2A');
-      sky.addColorStop(1, '#1E3A8A');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Ground
-      ctx.fillStyle = '#166534';
-      ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-      ctx.fillStyle = '#22C55E';
-      ctx.fillRect(0, canvas.height - 45, canvas.width, 8);
-
-      birdVelocity += gravity;
-      birdY += birdVelocity;
-
-      // Bird with rotation
-      const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
-
-      ctx.save();
-      ctx.translate(100, birdY);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.fillStyle = '#F9D71C';
-      ctx.beginPath();
-      ctx.arc(0, 0, 17, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Pipes with simple texture
-      if (frame % 82 === 0) {
-        const top = Math.random() * 230 + 90;
-        pipes.push({ x: canvas.width, top, passed: false });
-      }
-
-      for (let i = pipes.length - 1; i >= 0; i--) {
-        const p = pipes[i];
-        p.x -= 2.3;
-
-        ctx.fillStyle = '#22C55E';
-        ctx.fillRect(p.x, 0, 58, p.top);
-        ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
-
-        // Simple pipe highlight
-        ctx.fillStyle = '#4ADE80';
-        ctx.fillRect(p.x + 5, 0, 8, p.top);
-        ctx.fillRect(p.x + 5, p.top + 175, 8, canvas.height);
-
-        if (!p.passed && p.x + 58 < 100) {
-          p.passed = true;
-          setScore(s => s + 1);
-        }
-
-        if (
-          100 < p.x + 58 && 100 > p.x &&
-          (birdY - 17 < p.top || birdY + 17 > p.top + 175)
-        ) {
-          setGameOver(true);
-          setIsPlaying(false);
-        }
-
-        if (p.x < -70) pipes.splice(i, 1);
-      }
-
-      if (birdY > canvas.height - 60 || birdY < 20) {
-        setGameOver(true);
-        setIsPlaying(false);
-      }
-
-      frame++;
-      if (isPlaying && !gameOver) requestAnimationFrame(gameLoop);
-    };
-
-    gameLoop();
-
-    const handleJump = (e: Event) => {
-      e.preventDefault();
-      if (isPlaying && !gameOver) {
-        birdVelocity = jump;
-        playJumpSound();
-      }
-    };
-
-    canvas.addEventListener('click', handleJump);
-    canvas.addEventListener('touchstart', handleJump, { passive: false });
-
-    return () => {
-      canvas.removeEventListener('click', handleJump);
-      canvas.removeEventListener('touchstart', handleJump);
-    };
-  }, [isPlaying, gameOver, soundEnabled]);
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className="mb-6 flex items-center gap-6">
-        <div className="text-5xl font-bold text-[#F9D71C] tracking-wider">
-          {score}
-        </div>
-        {myHighScore && (
-          <div className="text-sm text-gray-400">
-            Best: <span className="text-[#60A5FA] font-medium">{myHighScore.toString()}</span>
-          </div>
-        )}
-        <button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          className="text-2xl text-gray-400 hover:text-white transition"
-        >
-          {soundEnabled ? '🔊' : '🔇'}
-        </button>
-      </div>
-
-      <canvas
-        ref={canvasRef}
-        className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
-      />
-
-      {(gameOver || !isPlaying) && (
-        <div className="mt-10 flex flex-col items-center gap-6 text-center">
-          {gameOver && (
-            <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
-          )}
-
-          {isNewHighScore && (
-            <p className="text-3xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
-          )}
-
-          {myHighScore && (
-            <p className="text-xl text-gray-300">
-              Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
-            </p>
-          )}
-
-          <div className="flex gap-4 flex-wrap justify-center">
-            <button
-              onClick={resetGame}
-              className="px-14 py-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
-            >
-              PLAY AGAIN
-            </button>
-
-            {address && gameOver && (
-              <button
-                onClick={submitScoreToChain}
-                disabled={isSubmitting}
-                className="px-14 py-5 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-2xl rounded-2xl transition-all disabled:opacity-70"
-              >
-                {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
-              </button>
-            )}
-
-            {gameOver && score >= 15 && (
-              <button
-                onClick={shareOnFarcaster}
-                className="px-10 py-5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xl rounded-2xl transition-all"
-              >
-                Share on Farcaster
-              </button>
-            )}
-          </div>
-
-          {showConfetti && (
-            <p className="text-green-400 text-xl font-medium mt-2">🎉 Score saved on Base!</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Share function
-const shareOnFarcaster = () => {
-  const scoreElement = document.querySelector('.text-5xl');
-  const currentScore = scoreElement ? scoreElement.textContent : '0';
-  const text = `I just scored ${currentScore} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
-  const url = `https://warpcast.com/\~/compose?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-};
-    setIsSubmitting(true);
-
-    try {
-      await writeContract({
-        address: FLAPPY_SCORE_ADDRESS as `0x${string}`,
-        abi: FlappyScoreABI,
-        functionName: 'submitScore',
-        args: [BigInt(score)],
-      });
-
-      if (myHighScore && score > Number(myHighScore)) {
-        setIsNewHighScore(true);
-      }
-
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 2800);
-
-    } catch (error) {
-      alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
-    }
-    setIsSubmitting(false);
-  };
-
-  const playJumpSound = () => {
-    if (!soundEnabled) return;
-    try {
-      const audio = new AudioContext();
-      const oscillator = audio.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = 620;
-      const gain = audio.createGain();
-      gain.gain.value = 0.15;
-      oscillator.connect(gain);
-      gain.connect(audio.destination);
-      oscillator.start();
-      setTimeout(() => oscillator.stop(), 70);
-    } catch {}
-  };
-
-  // Game Loop with bird rotation
+  // Game Loop
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -348,8 +118,7 @@ const shareOnFarcaster = () => {
       birdY += birdVelocity;
 
       // Bird with rotation
-      const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60); // realistic flap rotation
-
+      const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
       ctx.save();
       ctx.translate(100, birdY);
       ctx.rotate((rotation * Math.PI) / 180);
@@ -402,7 +171,9 @@ const shareOnFarcaster = () => {
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (isPlaying && !gameOver) {
+      if (!isPlaying) {
+        startGame();
+      } else if (!gameOver) {
         birdVelocity = jump;
         playJumpSound();
       }
@@ -441,7 +212,14 @@ const shareOnFarcaster = () => {
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
 
-      {(gameOver || !isPlaying) && (
+      {/* Start Screen */}
+      {!isPlaying && !gameOver && (
+        <div className="absolute text-center pointer-events-none">
+          <p className="text-3xl text-[#60A5FA] font-bold mb-4">TAP TO START</p>
+        </div>
+      )}
+
+      {(gameOver || !isPlaying) && isPlaying && (
         <div className="mt-10 flex flex-col items-center gap-6 text-center">
           {gameOver && (
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
