@@ -50,12 +50,18 @@ export default function FlappyBirdGame() {
       }
 
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+      setTimeout(() => setShowConfetti(false), 2800);
 
     } catch (error) {
       alert("❌ Failed to save score. Make sure you're on Base Sepolia.");
     }
     setIsSubmitting(false);
+  };
+
+  const shareOnFarcaster = () => {
+    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
+    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   const playJumpSound = () => {
@@ -72,12 +78,6 @@ export default function FlappyBirdGame() {
       oscillator.start();
       setTimeout(() => oscillator.stop(), 70);
     } catch {}
-  };
-
-  const shareOnFarcaster = () => {
-    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
-    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
   };
 
   // Game Loop
@@ -194,63 +194,4 @@ export default function FlappyBirdGame() {
       />
 
       {(gameOver || !isPlaying) && (
-        <div className="mt-10 flex flex-col items-center gap-6 text-center">
-          {gameOver && (
-            <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
-          )}
-
-          {isNewHighScore && (
-            <p className="text-3xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
-          )}
-
-          {myHighScore && (
-            <p className="text-xl text-gray-300">
-              Your best: <span className="text-[#60A5FA] font-bold">{myHighScore.toString()}</span>
-            </p>
-          )}
-
-          <div className="flex gap-4 flex-wrap justify-center">
-            <button
-              onClick={resetGame}
-              className="px-14 py-5 bg-gradient-to-r from-[#0052FF] to-[#3B82F6] text-white font-bold text-2xl rounded-2xl hover:scale-105 transition-all active:scale-95"
-            >
-              PLAY AGAIN
-            </button>
-
-            {address && gameOver && (
-              <button
-                onClick={submitScoreToChain}
-                disabled={isSubmitting}
-                className="px-14 py-5 bg-[#22C55E] hover:bg-[#16A34A] text-black font-bold text-2xl rounded-2xl transition-all disabled:opacity-70"
-              >
-                {isSubmitting ? 'SAVING ON BASE...' : 'SAVE SCORE ONCHAIN'}
-              </button>
-            )}
-
-            {gameOver && score >= 15 && (
-              <button
-                onClick={shareOnFarcaster}
-                className="px-10 py-5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xl rounded-2xl transition-all"
-              >
-                Share on Farcaster
-              </button>
-            )}
-          </div>
-
-          {showConfetti && (
-            <p className="text-green-400 text-xl font-medium mt-2">🎉 Score saved on Base!</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Share function
-const shareOnFarcaster = () => {
-  const scoreElement = document.querySelector('.text-5xl');
-  const currentScore = scoreElement ? scoreElement.textContent : '0';
-  const text = `I just scored ${currentScore} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
-  const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
-};
+        <div className="mt-12 flex flex-col items-center gap-6 text-center">
