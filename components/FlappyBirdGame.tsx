@@ -74,13 +74,7 @@ export default function FlappyBirdGame() {
     } catch {}
   };
 
-  const shareOnFarcaster = () => {
-    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
-    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  };
-
-  // Game Loop with sky + ground
+  // Game Loop with bird rotation
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -101,7 +95,7 @@ export default function FlappyBirdGame() {
     let pipes: { x: number; top: number; passed: boolean }[] = [];
 
     const gameLoop = () => {
-      // Sky gradient
+      // Sky
       const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
       sky.addColorStop(0, '#0A0A2A');
       sky.addColorStop(1, '#1E3A8A');
@@ -111,19 +105,23 @@ export default function FlappyBirdGame() {
       // Ground
       ctx.fillStyle = '#166534';
       ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
-
-      // Grass line
       ctx.fillStyle = '#22C55E';
       ctx.fillRect(0, canvas.height - 45, canvas.width, 8);
 
       birdVelocity += gravity;
       birdY += birdVelocity;
 
-      // Bird
+      // Bird with rotation
+      const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60); // realistic flap rotation
+
+      ctx.save();
+      ctx.translate(100, birdY);
+      ctx.rotate((rotation * Math.PI) / 180);
       ctx.fillStyle = '#F9D71C';
       ctx.beginPath();
-      ctx.arc(100, birdY, 17, 0, Math.PI * 2);
+      ctx.arc(0, 0, 17, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
 
       // Pipes
       if (frame % 82 === 0) {
