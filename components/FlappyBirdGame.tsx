@@ -27,10 +27,16 @@ export default function FlappyBirdGame() {
   const resetGame = useCallback(() => {
     setScore(0);
     setGameOver(false);
-    setIsPlaying(true);
+    setIsPlaying(false);
     setShowConfetti(false);
     setIsNewHighScore(false);
   }, []);
+
+  const startGame = () => {
+    setScore(0);
+    setGameOver(false);
+    setIsPlaying(true);
+  };
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
@@ -74,7 +80,13 @@ export default function FlappyBirdGame() {
     } catch {}
   };
 
-  // Game Loop with clouds
+  const shareOnFarcaster = () => {
+    const text = `I just scored ${score} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
+    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  // Game Loop with on-canvas score
   useEffect(() => {
     if (!isPlaying) return;
 
@@ -95,13 +107,8 @@ export default function FlappyBirdGame() {
     let pipes: { x: number; top: number; passed: boolean }[] = [];
     let clouds: { x: number; y: number; size: number }[] = [];
 
-    // Initial clouds
     for (let i = 0; i < 5; i++) {
-      clouds.push({
-        x: Math.random() * canvas.width,
-        y: 60 + Math.random() * 120,
-        size: 30 + Math.random() * 25
-      });
+      clouds.push({ x: Math.random() * canvas.width, y: 60 + Math.random() * 120, size: 30 + Math.random() * 25 });
     }
 
     const gameLoop = () => {
@@ -112,9 +119,9 @@ export default function FlappyBirdGame() {
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Moving clouds
+      // Clouds
       ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      clouds.forEach((cloud, i) => {
+      clouds.forEach(cloud => {
         cloud.x -= 0.4;
         if (cloud.x < -cloud.size * 2) cloud.x = canvas.width + 50;
         ctx.beginPath();
@@ -131,7 +138,7 @@ export default function FlappyBirdGame() {
       birdVelocity += gravity;
       birdY += birdVelocity;
 
-      // Bird with rotation
+      // Bird
       const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
       ctx.save();
       ctx.translate(100, birdY);
@@ -172,6 +179,12 @@ export default function FlappyBirdGame() {
         if (p.x < -70) pipes.splice(i, 1);
       }
 
+      // Score on canvas
+      ctx.fillStyle = '#F9D71C';
+      ctx.font = 'bold 48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(score.toString(), canvas.width / 2, 80);
+
       if (birdY > canvas.height - 60 || birdY < 20) {
         setGameOver(true);
         setIsPlaying(false);
@@ -185,7 +198,9 @@ export default function FlappyBirdGame() {
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (isPlaying && !gameOver) {
+      if (!isPlaying) {
+        startGame();
+      } else if (!gameOver) {
         birdVelocity = jump;
         playJumpSound();
       }
@@ -202,23 +217,6 @@ export default function FlappyBirdGame() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-6 flex items-center gap-6">
-        <div className="text-5xl font-bold text-[#F9D71C] tracking-wider">
-          {score}
-        </div>
-        {myHighScore && (
-          <div className="text-sm text-gray-400">
-            Best: <span className="text-[#60A5FA] font-medium">{myHighScore.toString()}</span>
-          </div>
-        )}
-        <button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          className="text-2xl text-gray-400 hover:text-white transition"
-        >
-          {soundEnabled ? '🔊' : '🔇'}
-        </button>
-      </div>
-
       <canvas
         ref={canvasRef}
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
