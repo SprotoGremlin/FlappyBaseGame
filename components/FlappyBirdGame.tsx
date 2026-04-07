@@ -27,10 +27,16 @@ export default function FlappyBirdGame() {
   const resetGame = useCallback(() => {
     setScore(0);
     setGameOver(false);
-    setIsPlaying(true);
+    setIsPlaying(false);
     setShowConfetti(false);
     setIsNewHighScore(false);
   }, []);
+
+  const startGame = () => {
+    setScore(0);
+    setGameOver(false);
+    setIsPlaying(true);
+  };
 
   const submitScoreToChain = async () => {
     if (!address || score === 0) return;
@@ -80,10 +86,8 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with pipe borders
+  // Game Loop with start screen on canvas
   useEffect(() => {
-    if (!isPlaying) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -134,72 +138,88 @@ export default function FlappyBirdGame() {
       ctx.fillRect(groundX, canvas.height - 45, canvas.width + 40, 8);
       ctx.fillRect(groundX - 40, canvas.height - 45, canvas.width + 40, 8);
 
-      birdVelocity += gravity;
-      birdY += birdVelocity;
+      if (isPlaying) {
+        birdVelocity += gravity;
+        birdY += birdVelocity;
 
-      // Bird
-      const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
-      ctx.save();
-      ctx.translate(100, birdY);
-      ctx.rotate((rotation * Math.PI) / 180);
-      ctx.fillStyle = '#F9D71C';
-      ctx.beginPath();
-      ctx.arc(0, 0, 17, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+        // Bird
+        const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
+        ctx.save();
+        ctx.translate(100, birdY);
+        ctx.rotate((rotation * Math.PI) / 180);
+        ctx.fillStyle = '#F9D71C';
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
 
-      // Pipes with borders
-      if (frame % 82 === 0) {
-        const top = Math.random() * 230 + 90;
-        pipes.push({ x: canvas.width, top, passed: false });
-      }
-
-      for (let i = pipes.length - 1; i >= 0; i--) {
-        const p = pipes[i];
-        p.x -= 2.3;
-
-        // Pipe body
-        ctx.fillStyle = '#22C55E';
-        ctx.fillRect(p.x, 0, 58, p.top);
-        ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
-
-        // Pipe border (darker)
-        ctx.fillStyle = '#166534';
-        ctx.fillRect(p.x, 0, 8, p.top);
-        ctx.fillRect(p.x + 50, 0, 8, p.top);
-        ctx.fillRect(p.x, p.top + 175, 8, canvas.height);
-        ctx.fillRect(p.x + 50, p.top + 175, 8, canvas.height);
-
-        if (!p.passed && p.x + 58 < 100) {
-          p.passed = true;
-          setScore(s => s + 1);
+        // Pipes
+        if (frame % 82 === 0) {
+          const top = Math.random() * 230 + 90;
+          pipes.push({ x: canvas.width, top, passed: false });
         }
 
-        if (
-          100 < p.x + 58 && 100 > p.x &&
-          (birdY - 17 < p.top || birdY + 17 > p.top + 175)
-        ) {
+        for (let i = pipes.length - 1; i >= 0; i--) {
+          const p = pipes[i];
+          p.x -= 2.3;
+
+          ctx.fillStyle = '#22C55E';
+          ctx.fillRect(p.x, 0, 58, p.top);
+          ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
+
+          if (!p.passed && p.x + 58 < 100) {
+            p.passed = true;
+            setScore(s => s + 1);
+          }
+
+          if (
+            100 < p.x + 58 && 100 > p.x &&
+            (birdY - 17 < p.top || birdY + 17 > p.top + 175)
+          ) {
+            setGameOver(true);
+            setIsPlaying(false);
+          }
+
+          if (p.x < -70) pipes.splice(i, 1);
+        }
+
+        if (birdY > canvas.height - 60 || birdY < 20) {
           setGameOver(true);
           setIsPlaying(false);
         }
 
-        if (p.x < -70) pipes.splice(i, 1);
-      }
+        // Score on canvas
+        ctx.fillStyle = '#F9D71C';
+        ctx.font = 'bold 48px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(score.toString(), canvas.width / 2, 80);
+      } else {
+        // Start Screen on Canvas
+        ctx.fillStyle = '#F9D71C';
+        ctx.font = 'bold 42px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('FlappyBase', canvas.width / 2, 180);
 
-      if (birdY > canvas.height - 60 || birdY < 20) {
-        setGameOver(true);
-        setIsPlaying(false);
+        ctx.fillStyle = '#60A5FA';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText('TAP TO START', canvas.width / 2, 260);
+
+        ctx.fillStyle = '#F9D71C';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('🐦‍🔥', canvas.width / 2, 300);
       }
 
       frame++;
-      if (isPlaying && !gameOver) requestAnimationFrame(gameLoop);
+      requestAnimationFrame(gameLoop);
     };
 
     gameLoop();
 
     const handleJump = (e: Event) => {
       e.preventDefault();
-      if (isPlaying && !gameOver) {
+      if (!isPlaying && !gameOver) {
+        startGame();
+      } else if (isPlaying && !gameOver) {
         birdVelocity = jump;
         playJumpSound();
       }
@@ -216,29 +236,12 @@ export default function FlappyBirdGame() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-6 flex items-center gap-6">
-        <div className="text-5xl font-bold text-[#F9D71C] tracking-wider">
-          {score}
-        </div>
-        {myHighScore && (
-          <div className="text-sm text-gray-400">
-            Best: <span className="text-[#60A5FA] font-medium">{myHighScore.toString()}</span>
-          </div>
-        )}
-        <button
-          onClick={() => setSoundEnabled(!soundEnabled)}
-          className="text-2xl text-gray-400 hover:text-white transition"
-        >
-          {soundEnabled ? '🔊' : '🔇'}
-        </button>
-      </div>
-
       <canvas
         ref={canvasRef}
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
 
-      {(gameOver || !isPlaying) && (
+      {(gameOver || !isPlaying) && isPlaying && (
         <div className="mt-10 flex flex-col items-center gap-6 text-center">
           {gameOver && (
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
