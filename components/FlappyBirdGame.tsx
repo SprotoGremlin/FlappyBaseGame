@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with nice start screen
+  // Game Loop with wing flap
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -100,6 +100,7 @@ export default function FlappyBirdGame() {
     let birdVelocity = 0;
     const gravity = 0.55;
     const jump = -11.5;
+    let wingFlap = 0;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
@@ -142,7 +143,10 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Bird
+        // Wing flap
+        wingFlap = Math.sin(frame / 3) * 8;
+
+        // Bird with flap
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
         ctx.translate(100, birdY);
@@ -150,6 +154,12 @@ export default function FlappyBirdGame() {
         ctx.fillStyle = '#F9D71C';
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Simple wing
+        ctx.fillStyle = '#F59E0B';
+        ctx.beginPath();
+        ctx.ellipse(-5, 5 + wingFlap, 12, 8, Math.PI / 4, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
@@ -166,6 +176,11 @@ export default function FlappyBirdGame() {
           ctx.fillStyle = '#22C55E';
           ctx.fillRect(p.x, 0, 58, p.top);
           ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
+
+          // Pipe caps
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(p.x - 4, p.top - 25, 66, 30);
+          ctx.fillRect(p.x - 4, p.top + 175, 66, 30);
 
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
@@ -205,7 +220,7 @@ export default function FlappyBirdGame() {
         ctx.fillText('GET READY!', canvas.width / 2, 240);
 
         ctx.fillStyle = '#F9D71C';
-        ctx.font = 'bold 20px sans-serif';
+        ctx.font = 'bold 22px sans-serif';
         ctx.fillText('TAP TO FLAP', canvas.width / 2, 290);
       }
 
