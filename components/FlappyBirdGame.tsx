@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with nice start screen
+  // Full Game Loop with start screen on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -194,7 +194,7 @@ export default function FlappyBirdGame() {
         ctx.textAlign = 'center';
         ctx.fillText(score.toString(), canvas.width / 2, 80);
       } else {
-        // Start Screen
+        // Start Screen on Canvas
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 42px sans-serif';
         ctx.textAlign = 'center';
@@ -205,7 +205,7 @@ export default function FlappyBirdGame() {
         ctx.fillText('GET READY!', canvas.width / 2, 240);
 
         ctx.fillStyle = '#F9D71C';
-        ctx.font = 'bold 20px sans-serif';
+        ctx.font = 'bold 22px sans-serif';
         ctx.fillText('TAP TO FLAP', canvas.width / 2, 290);
       }
 
