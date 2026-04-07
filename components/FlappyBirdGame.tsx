@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with wing flap
+  // Game Loop with dynamic pipe speed
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -100,7 +100,6 @@ export default function FlappyBirdGame() {
     let birdVelocity = 0;
     const gravity = 0.55;
     const jump = -11.5;
-    let wingFlap = 0;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
@@ -143,10 +142,7 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Wing flap
-        wingFlap = Math.sin(frame / 3) * 8;
-
-        // Bird with flap
+        // Bird
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
         ctx.translate(100, birdY);
@@ -155,13 +151,10 @@ export default function FlappyBirdGame() {
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
-
-        // Simple wing
-        ctx.fillStyle = '#F59E0B';
-        ctx.beginPath();
-        ctx.ellipse(-5, 5 + wingFlap, 12, 8, Math.PI / 4, 0, Math.PI * 2);
-        ctx.fill();
         ctx.restore();
+
+        // Dynamic pipe speed (gets faster after score 30)
+        const pipeSpeed = score > 30 ? 3.0 : 2.3;
 
         // Pipes
         if (frame % 82 === 0) {
@@ -171,7 +164,7 @@ export default function FlappyBirdGame() {
 
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
-          p.x -= 2.3;
+          p.x -= pipeSpeed;
 
           ctx.fillStyle = '#22C55E';
           ctx.fillRect(p.x, 0, 58, p.top);
