@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with dynamic pipe speed
+  // Game Loop with live high score on canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -153,9 +153,6 @@ export default function FlappyBirdGame() {
         ctx.fill();
         ctx.restore();
 
-        // Dynamic pipe speed (gets faster after score 30)
-        const pipeSpeed = score > 30 ? 3.0 : 2.3;
-
         // Pipes
         if (frame % 82 === 0) {
           const top = Math.random() * 230 + 90;
@@ -164,7 +161,7 @@ export default function FlappyBirdGame() {
 
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
-          p.x -= pipeSpeed;
+          p.x -= 2.3;
 
           ctx.fillStyle = '#22C55E';
           ctx.fillRect(p.x, 0, 58, p.top);
@@ -196,11 +193,17 @@ export default function FlappyBirdGame() {
           setIsPlaying(false);
         }
 
-        // Score on canvas
+        // Live score + high score on canvas
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 48px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(score.toString(), canvas.width / 2, 80);
+
+        if (myHighScore) {
+          ctx.fillStyle = '#60A5FA';
+          ctx.font = 'bold 18px sans-serif';
+          ctx.fillText(`BEST ${myHighScore.toString()}`, canvas.width / 2, 115);
+        }
       } else {
         // Start Screen
         ctx.fillStyle = '#F9D71C';
