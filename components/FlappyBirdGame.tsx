@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with increasing difficulty
+  // Game Loop with bigger touch area
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -142,10 +142,6 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Dynamic difficulty
-        const pipeSpeed = score > 40 ? 3.2 : score > 25 ? 2.8 : 2.3;
-        const pipeGap = score > 40 ? 155 : 175;
-
         // Bird
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
@@ -159,22 +155,17 @@ export default function FlappyBirdGame() {
 
         // Pipes
         if (frame % 82 === 0) {
-          const top = Math.random() * 220 + 100;
+          const top = Math.random() * 230 + 90;
           pipes.push({ x: canvas.width, top, passed: false });
         }
 
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
-          p.x -= pipeSpeed;
+          p.x -= 2.3;
 
           ctx.fillStyle = '#22C55E';
           ctx.fillRect(p.x, 0, 58, p.top);
-          ctx.fillRect(p.x, p.top + pipeGap, 58, canvas.height);
-
-          // Pipe caps
-          ctx.fillStyle = '#166534';
-          ctx.fillRect(p.x - 4, p.top - 25, 66, 30);
-          ctx.fillRect(p.x - 4, p.top + pipeGap, 66, 30);
+          ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
 
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
@@ -183,7 +174,7 @@ export default function FlappyBirdGame() {
 
           if (
             100 < p.x + 58 && 100 > p.x &&
-            (birdY - 17 < p.top || birdY + 17 > p.top + pipeGap)
+            (birdY - 17 < p.top || birdY + 17 > p.top + 175)
           ) {
             setGameOver(true);
             setIsPlaying(false);
@@ -234,6 +225,8 @@ export default function FlappyBirdGame() {
       }
     };
 
+    // Bigger touch area for mobile
+    canvas.style.touchAction = 'none';
     canvas.addEventListener('click', handleJump);
     canvas.addEventListener('touchstart', handleJump, { passive: false });
 
