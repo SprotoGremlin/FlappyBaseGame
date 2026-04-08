@@ -9,6 +9,17 @@ export default function FlappyBirdGame() {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isSubmitt'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useAccount, useWriteContract, useReadContract } from 'wagmi';
+import { FlappyScoreABI, FLAPPY_SCORE_ADDRESS } from '@/lib/contract/FlappyScore';
+
+export default function FlappyBirdGame() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [score, setScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -194,7 +205,7 @@ export default function FlappyBirdGame() {
         ctx.textAlign = 'center';
         ctx.fillText(score.toString(), canvas.width / 2, 80);
 
-        // Live high score next to it
+        // Live best score next to it
         if (myHighScore) {
           ctx.fillStyle = '#60A5FA';
           ctx.font = 'bold 18px sans-serif';
