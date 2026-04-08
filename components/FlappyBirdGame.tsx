@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with bigger touch area
+  // Game Loop with final polish
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -225,8 +225,6 @@ export default function FlappyBirdGame() {
       }
     };
 
-    // Bigger touch area for mobile
-    canvas.style.touchAction = 'none';
     canvas.addEventListener('click', handleJump);
     canvas.addEventListener('touchstart', handleJump, { passive: false });
 
@@ -303,4 +301,5 @@ const shareOnFarcaster = () => {
   const text = `I just scored ${currentScore} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
   const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
+};
 };
