@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with final polish
+  // Game Loop with bird eye + wing polish
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -100,6 +100,7 @@ export default function FlappyBirdGame() {
     let birdVelocity = 0;
     const gravity = 0.55;
     const jump = -11.5;
+    let wingFlap = 0;
 
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
@@ -142,7 +143,10 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Bird
+        // Wing flap animation
+        wingFlap = Math.sin(frame / 3) * 8;
+
+        // Bird with eye + wing
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
         ctx.translate(100, birdY);
@@ -151,6 +155,23 @@ export default function FlappyBirdGame() {
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
+
+        // Wing
+        ctx.fillStyle = '#F59E0B';
+        ctx.beginPath();
+        ctx.ellipse(-5, 5 + wingFlap, 13, 9, Math.PI / 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(8, -6, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(9, -6, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.restore();
 
         // Pipes
@@ -166,6 +187,11 @@ export default function FlappyBirdGame() {
           ctx.fillStyle = '#22C55E';
           ctx.fillRect(p.x, 0, 58, p.top);
           ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
+
+          // Pipe caps
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(p.x - 4, p.top - 25, 66, 30);
+          ctx.fillRect(p.x - 4, p.top + 175, 66, 30);
 
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
@@ -301,5 +327,4 @@ const shareOnFarcaster = () => {
   const text = `I just scored ${currentScore} on FlappyBase! 🐦‍🔥 Can you beat me? Play now on Base!`;
   const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`;
   window.open(url, '_blank');
-};
 };
