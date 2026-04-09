@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with bird eye + wing polish
+  // Game Loop with bird shadow polish
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -143,18 +143,25 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Wing flap animation
+        // Wing flap
         wingFlap = Math.sin(frame / 3) * 8;
 
-        // Bird with eye + wing
+        // Bird with shadow + eye
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
+        ctx.shadowColor = '#000000';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 6;
         ctx.translate(100, birdY);
         ctx.rotate((rotation * Math.PI) / 180);
         ctx.fillStyle = '#F9D71C';
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
 
         // Wing
         ctx.fillStyle = '#F59E0B';
