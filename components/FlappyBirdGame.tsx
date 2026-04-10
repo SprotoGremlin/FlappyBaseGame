@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with bird shadow polish
+  // Game Loop with score pop flash
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -105,6 +105,7 @@ export default function FlappyBirdGame() {
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
     let clouds: { x: number; y: number; size: number }[] = [];
+    let scoreFlash = 0; // for pop animation
 
     for (let i = 0; i < 5; i++) {
       clouds.push({ x: Math.random() * canvas.width, y: 60 + Math.random() * 120, size: 30 + Math.random() * 25 });
@@ -146,22 +147,15 @@ export default function FlappyBirdGame() {
         // Wing flap
         wingFlap = Math.sin(frame / 3) * 8;
 
-        // Bird with shadow + eye
+        // Bird with eye + wing
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
-        ctx.shadowColor = '#000000';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetX = 3;
-        ctx.shadowOffsetY = 6;
         ctx.translate(100, birdY);
         ctx.rotate((rotation * Math.PI) / 180);
         ctx.fillStyle = '#F9D71C';
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
 
         // Wing
         ctx.fillStyle = '#F59E0B';
@@ -203,6 +197,7 @@ export default function FlappyBirdGame() {
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
             setScore(s => s + 1);
+            scoreFlash = 12; // trigger flash
           }
 
           if (
@@ -221,11 +216,18 @@ export default function FlappyBirdGame() {
           setIsPlaying(false);
         }
 
-        // Score on canvas
-        ctx.fillStyle = '#F9D71C';
+        // Score with flash pop effect
+        const flashScale = scoreFlash > 0 ? 1.3 : 1;
+        ctx.save();
+        ctx.translate(canvas.width / 2, 80);
+        ctx.scale(flashScale, flashScale);
+        ctx.fillStyle = scoreFlash > 0 ? '#22C55E' : '#F9D71C';
         ctx.font = 'bold 48px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(score.toString(), canvas.width / 2, 80);
+        ctx.fillText(score.toString(), 0, 0);
+        ctx.restore();
+
+        if (scoreFlash > 0) scoreFlash--;
       } else {
         // Start Screen
         ctx.fillStyle = '#F9D71C';
