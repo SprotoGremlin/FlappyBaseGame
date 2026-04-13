@@ -86,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with score pop flash
+  // Game Loop with confetti on new high score
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -105,7 +105,7 @@ export default function FlappyBirdGame() {
     let frame = 0;
     let pipes: { x: number; top: number; passed: boolean }[] = [];
     let clouds: { x: number; y: number; size: number }[] = [];
-    let scoreFlash = 0; // for pop animation
+    let scoreFlash = 0;
 
     for (let i = 0; i < 5; i++) {
       clouds.push({ x: Math.random() * canvas.width, y: 60 + Math.random() * 120, size: 30 + Math.random() * 25 });
@@ -147,7 +147,7 @@ export default function FlappyBirdGame() {
         // Wing flap
         wingFlap = Math.sin(frame / 3) * 8;
 
-        // Bird with eye + wing
+        // Bird
         const rotation = Math.min(Math.max(birdVelocity * 3, -25), 60);
         ctx.save();
         ctx.translate(100, birdY);
@@ -189,15 +189,10 @@ export default function FlappyBirdGame() {
           ctx.fillRect(p.x, 0, 58, p.top);
           ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
 
-          // Pipe caps
-          ctx.fillStyle = '#166534';
-          ctx.fillRect(p.x - 4, p.top - 25, 66, 30);
-          ctx.fillRect(p.x - 4, p.top + 175, 66, 30);
-
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
             setScore(s => s + 1);
-            scoreFlash = 12; // trigger flash
+            scoreFlash = 12;
           }
 
           if (
@@ -216,7 +211,7 @@ export default function FlappyBirdGame() {
           setIsPlaying(false);
         }
 
-        // Score with flash pop effect
+        // Score with flash
         const flashScale = scoreFlash > 0 ? 1.3 : 1;
         ctx.save();
         ctx.translate(canvas.width / 2, 80);
@@ -283,7 +278,7 @@ export default function FlappyBirdGame() {
           )}
 
           {isNewHighScore && (
-            <p className="text-3xl text-yellow-400 font-bold">🏆 NEW HIGH SCORE!</p>
+            <p className="text-3xl text-yellow-400 font-bold animate-bounce">🏆 NEW HIGH SCORE!</p>
           )}
 
           {myHighScore && (
