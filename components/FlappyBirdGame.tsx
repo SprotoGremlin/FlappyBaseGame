@@ -13,6 +13,7 @@ export default function FlappyBirdGame() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [showRestart, setShowRestart] = useState(false);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -30,12 +31,14 @@ export default function FlappyBirdGame() {
     setIsPlaying(false);
     setShowConfetti(false);
     setIsNewHighScore(false);
+    setShowRestart(false);
   }, []);
 
   const startGame = () => {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
+    setShowRestart(false);
   };
 
   const submitScoreToChain = async () => {
@@ -86,7 +89,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with confetti on new high score
+  // Game Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -144,7 +147,6 @@ export default function FlappyBirdGame() {
         birdVelocity += gravity;
         birdY += birdVelocity;
 
-        // Wing flap
         wingFlap = Math.sin(frame / 3) * 8;
 
         // Bird
@@ -157,13 +159,11 @@ export default function FlappyBirdGame() {
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
 
-        // Wing
         ctx.fillStyle = '#F59E0B';
         ctx.beginPath();
         ctx.ellipse(-5, 5 + wingFlap, 13, 9, Math.PI / 3, 0, Math.PI * 2);
         ctx.fill();
 
-        // Eye
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(8, -6, 5, 0, Math.PI * 2);
@@ -189,6 +189,10 @@ export default function FlappyBirdGame() {
           ctx.fillRect(p.x, 0, 58, p.top);
           ctx.fillRect(p.x, p.top + 175, 58, canvas.height);
 
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(p.x - 4, p.top - 25, 66, 30);
+          ctx.fillRect(p.x - 4, p.top + 175, 66, 30);
+
           if (!p.passed && p.x + 58 < 100) {
             p.passed = true;
             setScore(s => s + 1);
@@ -201,6 +205,7 @@ export default function FlappyBirdGame() {
           ) {
             setGameOver(true);
             setIsPlaying(false);
+            setShowRestart(true);
           }
 
           if (p.x < -70) pipes.splice(i, 1);
@@ -209,6 +214,7 @@ export default function FlappyBirdGame() {
         if (birdY > canvas.height - 60 || birdY < 20) {
           setGameOver(true);
           setIsPlaying(false);
+          setShowRestart(true);
         }
 
         // Score with flash
@@ -224,7 +230,7 @@ export default function FlappyBirdGame() {
 
         if (scoreFlash > 0) scoreFlash--;
       } else {
-        // Start Screen
+        // Start / Game Over Screen
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 42px sans-serif';
         ctx.textAlign = 'center';
@@ -232,7 +238,7 @@ export default function FlappyBirdGame() {
 
         ctx.fillStyle = '#60A5FA';
         ctx.font = 'bold 26px sans-serif';
-        ctx.fillText('GET READY!', canvas.width / 2, 240);
+        ctx.fillText(gameOver ? 'GAME OVER' : 'GET READY!', canvas.width / 2, 240);
 
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 22px sans-serif';
@@ -252,6 +258,8 @@ export default function FlappyBirdGame() {
       } else if (isPlaying && !gameOver) {
         birdVelocity = jump;
         playJumpSound();
+      } else if (gameOver) {
+        resetGame();
       }
     };
 
@@ -271,7 +279,7 @@ export default function FlappyBirdGame() {
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
 
-      {(gameOver || !isPlaying) && isPlaying && (
+      {(gameOver || !isPlaying) && (
         <div className="mt-10 flex flex-col items-center gap-6 text-center">
           {gameOver && (
             <p className="text-5xl text-red-500 font-black tracking-wider">GAME OVER</p>
