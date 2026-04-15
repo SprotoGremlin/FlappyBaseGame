@@ -64,6 +64,10 @@ export default function FlappyBirdGame() {
     setIsSubmitting(false);
   };
 
+  const toggleSound = () => {
+    setSoundEnabled(!soundEnabled);
+  };
+
   const playJumpSound = () => {
     if (!soundEnabled) return;
     try {
@@ -86,7 +90,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with Base branding glow
+  // Game Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -225,7 +229,7 @@ export default function FlappyBirdGame() {
 
         if (scoreFlash > 0) scoreFlash--;
       } else {
-        // Start / Game Over Screen with glowing Base title
+        // Start / Game Over Screen with Base branding
         ctx.save();
         ctx.shadowColor = '#0052FF';
         ctx.shadowBlur = 25;
@@ -243,7 +247,6 @@ export default function FlappyBirdGame() {
         ctx.font = 'bold 22px sans-serif';
         ctx.fillText('TAP TO FLAP', canvas.width / 2, 290);
 
-        // Base badge
         ctx.fillStyle = '#0052FF';
         ctx.font = 'bold 14px sans-serif';
         ctx.fillText('OFFICIAL BASE EDITION', canvas.width / 2, 340);
@@ -282,6 +285,13 @@ export default function FlappyBirdGame() {
         ref={canvasRef}
         className="border-4 border-[#0052FF] rounded-3xl shadow-2xl touch-none w-full max-w-[440px]"
       />
+
+      <button
+        onClick={toggleSound}
+        className="mt-4 px-6 py-2 bg-[#111] hover:bg-[#222] text-white text-sm rounded-full flex items-center gap-2 transition-all"
+      >
+        {soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF'}
+      </button>
 
       {(gameOver || !isPlaying) && (
         <div className="mt-10 flex flex-col items-center gap-6 text-center">
