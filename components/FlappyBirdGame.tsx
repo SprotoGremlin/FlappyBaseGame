@@ -13,7 +13,6 @@ export default function FlappyBirdGame() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
-  const [showRestart, setShowRestart] = useState(false);
 
   const { address } = useAccount();
   const { writeContract } = useWriteContract();
@@ -31,14 +30,12 @@ export default function FlappyBirdGame() {
     setIsPlaying(false);
     setShowConfetti(false);
     setIsNewHighScore(false);
-    setShowRestart(false);
   }, []);
 
   const startGame = () => {
     setScore(0);
     setGameOver(false);
     setIsPlaying(true);
-    setShowRestart(false);
   };
 
   const submitScoreToChain = async () => {
@@ -89,7 +86,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop
+  // Game Loop with Base branding glow
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -205,7 +202,6 @@ export default function FlappyBirdGame() {
           ) {
             setGameOver(true);
             setIsPlaying(false);
-            setShowRestart(true);
           }
 
           if (p.x < -70) pipes.splice(i, 1);
@@ -214,7 +210,6 @@ export default function FlappyBirdGame() {
         if (birdY > canvas.height - 60 || birdY < 20) {
           setGameOver(true);
           setIsPlaying(false);
-          setShowRestart(true);
         }
 
         // Score with flash
@@ -230,19 +225,28 @@ export default function FlappyBirdGame() {
 
         if (scoreFlash > 0) scoreFlash--;
       } else {
-        // Start / Game Over Screen
+        // Start / Game Over Screen with glowing Base title
+        ctx.save();
+        ctx.shadowColor = '#0052FF';
+        ctx.shadowBlur = 25;
         ctx.fillStyle = '#F9D71C';
-        ctx.font = 'bold 42px sans-serif';
+        ctx.font = 'bold 48px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('FlappyBase', canvas.width / 2, 170);
+        ctx.restore();
 
-        ctx.fillStyle = '#60A5FA';
+        ctx.fillStyle = gameOver ? '#EF4444' : '#60A5FA';
         ctx.font = 'bold 26px sans-serif';
         ctx.fillText(gameOver ? 'GAME OVER' : 'GET READY!', canvas.width / 2, 240);
 
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 22px sans-serif';
         ctx.fillText('TAP TO FLAP', canvas.width / 2, 290);
+
+        // Base badge
+        ctx.fillStyle = '#0052FF';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('OFFICIAL BASE EDITION', canvas.width / 2, 340);
       }
 
       frame++;
