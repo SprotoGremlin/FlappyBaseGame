@@ -90,7 +90,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Game Loop with final mobile touch improvements
+  // Final Game Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -270,7 +270,6 @@ export default function FlappyBirdGame() {
       }
     };
 
-    // Final mobile improvements
     canvas.style.touchAction = 'none';
     canvas.addEventListener('click', handleJump);
     canvas.addEventListener('touchstart', handleJump, { passive: false });
