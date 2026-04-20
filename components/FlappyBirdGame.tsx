@@ -90,7 +90,7 @@ export default function FlappyBirdGame() {
     window.open(url, '_blank');
   };
 
-  // Final Game Loop
+  // Final Game Loop - 100 COMMITS CELEBRATION
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -229,27 +229,31 @@ export default function FlappyBirdGame() {
 
         if (scoreFlash > 0) scoreFlash--;
       } else {
-        // Start / Game Over Screen with Base branding
+        // Start / Game Over Screen - 100 COMMITS CELEBRATION
         ctx.save();
         ctx.shadowColor = '#0052FF';
-        ctx.shadowBlur = 25;
+        ctx.shadowBlur = 30;
         ctx.fillStyle = '#F9D71C';
-        ctx.font = 'bold 48px sans-serif';
+        ctx.font = 'bold 52px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('FlappyBase', canvas.width / 2, 170);
+        ctx.fillText('FlappyBase', canvas.width / 2, 165);
         ctx.restore();
 
         ctx.fillStyle = gameOver ? '#EF4444' : '#60A5FA';
-        ctx.font = 'bold 26px sans-serif';
-        ctx.fillText(gameOver ? 'GAME OVER' : 'GET READY!', canvas.width / 2, 240);
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(gameOver ? 'GAME OVER' : 'GET READY!', canvas.width / 2, 235);
+
+        ctx.fillStyle = '#22C55E';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('🎉 100 COMMITS ACHIEVED! 🎉', canvas.width / 2, 285);
 
         ctx.fillStyle = '#F9D71C';
         ctx.font = 'bold 22px sans-serif';
-        ctx.fillText('TAP TO FLAP', canvas.width / 2, 290);
+        ctx.fillText('TAP TO FLAP', canvas.width / 2, 330);
 
         ctx.fillStyle = '#0052FF';
         ctx.font = 'bold 14px sans-serif';
-        ctx.fillText('OFFICIAL BASE EDITION', canvas.width / 2, 340);
+        ctx.fillText('OFFICIAL BASE EDITION', canvas.width / 2, 370);
       }
 
       frame++;
